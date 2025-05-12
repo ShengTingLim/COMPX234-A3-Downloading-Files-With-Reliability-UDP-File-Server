@@ -1,3 +1,4 @@
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 public class Server {
@@ -17,7 +18,14 @@ public class Server {
         }
 
         try (DatagramSocket serverSocket = new DatagramSocket(port)) {
+            System.out.println("Server is listening on port " + port);
             
+            byte[] buffer = new byte[1024];
+
+            while (true) {
+                DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+                serverSocket.receive(requestPacket);
+            }
         }
         catch (Exception e){
             
