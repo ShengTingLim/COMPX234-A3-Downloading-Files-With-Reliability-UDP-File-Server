@@ -1,3 +1,5 @@
+import java.net.DatagramSocket;
+
 public class Server {
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -12,6 +14,13 @@ public class Server {
         } catch (NumberFormatException e) {
             System.out.println("Invalid port number. Please provide a valid integer.");
             return;
+        }
+
+        try (DatagramSocket serverSocket = new DatagramSocket(port)) {
+            
+        }
+        catch (Exception e){
+            
         }
     }
 }
