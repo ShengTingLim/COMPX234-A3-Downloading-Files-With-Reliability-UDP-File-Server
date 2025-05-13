@@ -25,6 +25,9 @@ public class Server {
             while (true) {
                 DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
                 serverSocket.receive(requestPacket);
+
+                String request = new String(requestPacket.getData(), 0, requestPacket.getLength());
+                System.out.println("Received request: " + request);
             }
         }
         catch (Exception e){
