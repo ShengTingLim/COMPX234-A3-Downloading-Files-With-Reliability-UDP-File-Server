@@ -1,4 +1,8 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Client {
     public static void main(String[] args) {
@@ -9,7 +13,7 @@ public class Client {
 
         String hostname = args[0];
         int port;
-        String filename = args[2];
+        String fileList = args[2];
 
         try {
             port = Integer.parseInt(args[1]);
@@ -18,8 +22,21 @@ public class Client {
             return;
         }
 
-        try(DatagramSocket clientSocket = new DatagramSocket()){
+        List<String> fileNames = new ArrayList<>();
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(fileList))) {
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+                line = line.trim();
+                if (!line.isEmpty()) {
+                    fileNames.add(line);
+                }
+            }   
+        } catch (Exception e) {
+            System.out.println("Error reading file: " + e.getMessage());
+        }
 
+        try(DatagramSocket clientSocket = new DatagramSocket()){
+            
         }
         catch (Exception e){
             
