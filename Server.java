@@ -1,5 +1,6 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class Server {
     public static void main(String[] args) {
@@ -26,8 +27,14 @@ public class Server {
                 DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
                 serverSocket.receive(requestPacket);
 
-                String request = new String(requestPacket.getData(), 0, requestPacket.getLength());
-                System.out.println("Received request: " + request);
+                String receivedData = new String(requestPacket.getData(), 0, requestPacket.getLength());
+                System.out.println("Received request: " + receivedData);
+
+                InetAddress clientAddress = requestPacket.getAddress();
+                int clientPort = requestPacket.getPort();
+                System.out.println("Client address: " + clientAddress + ", Client port: " + clientPort);
+
+                
             }
         }
         catch (Exception e){
