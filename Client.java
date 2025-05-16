@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,17 @@ public class Client {
         }
 
         try(DatagramSocket clientSocket = new DatagramSocket()){
-            
+            for (String fileName : fileNames) {
+                System.out.println("Sending file name: " + fileName);
+                String requestMessage = "DOWNLOAD " + fileName;
+
+                byte[] sendData = requestMessage.getBytes();
+                InetAddress serverAddress = InetAddress.getByName(hostname);
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, port);
+
+                clientSocket.send(sendPacket);
+                System.out.println("DOWNLOAD " + fileName + " sent to server");
+            }
         }
         catch (Exception e){
             
