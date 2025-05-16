@@ -1,3 +1,4 @@
+import java.io.File;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -33,8 +34,23 @@ public class Server {
                 InetAddress clientAddress = requestPacket.getAddress();
                 int clientPort = requestPacket.getPort();
                 System.out.println("Client address: " + clientAddress + ", Client port: " + clientPort);
-                
 
+                String[] requestParts = receivedData.split(" ", 2);
+                if (requestParts[0].equals("DOWNLOAD")) {
+                    String fileName = requestParts[1];
+                    File file = new File(fileName);
+                    String response;
+                    
+                    if (file.exists() && file.isFile()) {
+                        long fileSize = file.length();
+                        
+                    } else {
+                        response = "ERR " + fileName + " NOT_FOUND";
+                        byte[] responseData = response.getBytes();
+                        DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length, clientAddress, clientPort);
+                        serverSocket.send(responsePacket);
+                    }
+                }
             }
         }
         catch (Exception e){
@@ -44,13 +60,11 @@ public class Server {
 
     static class ClientHandler extends Thread {
         private String fileName;
-        private String filePath;
         private InetAddress clientAddress;
         private int clientHandlerPort;
 
-        public ClientHandler(String fileName, String filePath, InetAddress clientAddress, int clientHandlerPort) {
+        public ClientHandler(String fileName, InetAddress clientAddress, int clientHandlerPort) {
             this.fileName = fileName;
-            this.filePath = filePath;
             this.clientAddress = clientAddress;
             this.clientHandlerPort = clientHandlerPort;
             System.out.println("ClientHandler created for file: " + fileName + " on port: " + clientHandlerPort);
