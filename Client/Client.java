@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -102,6 +103,13 @@ public class Client {
                     if (base64DataString != null) {
                         byte[] fileData = Base64.getDecoder().decode(base64DataString);
                         System.out.println("File data received: " + new String(fileData));
+                        try (FileOutputStream fileWriter = new FileOutputStream(fileName, true)) {
+                            fileWriter.write(fileData);
+                            System.out.println("Written " + fileData.length + " bytes to file: " + fileName);
+                            System.out.println("Total bytes received: " + bytesReceived);
+                        } catch (Exception e) {
+                            System.out.println("Error writing file: " + e.getMessage());
+                        }
                     } else {
                         System.out.println("No file data received");
                     }
