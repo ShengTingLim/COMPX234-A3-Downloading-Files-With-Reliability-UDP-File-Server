@@ -1,14 +1,19 @@
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 public class Client {
+    private static final int INITIAL_TIMEOUT = 1000;
+    private static final int MAX_RETRIES = 5;
+
     public static void main(String[] args) {
         if (args.length != 3) {
             System.out.println("Usage: java Client <hostname> <port> <filename>");
@@ -36,7 +41,7 @@ public class Client {
                 }
             }   
         } catch (Exception e) {
-            System.out.println("Error reading file: " + e.getMessage());
+            System.out.println("Error reading files list: " + e.getMessage());
         }
 
         try(DatagramSocket clientSocket = new DatagramSocket()){
@@ -54,6 +59,7 @@ public class Client {
 
                 byte[] receiveBuffer = new byte[2024];
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+                clientSocket.setSoTimeout(INITIAL_TIMEOUT);
                 clientSocket.receive(receivePacket);
 
                 String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
@@ -127,6 +133,7 @@ public class Client {
                     String closeResponse = new String(closeResponsePacket.getData(), 0, closeResponsePacket.getLength());
                     System.out.println("Received close response: " + closeResponse);
                     String[] closeResponseParts = closeResponse.split(" ");
+                    
                     if (closeResponseParts[0].equals("FILE") && closeResponseParts[1].equals(fileName) && closeResponseParts[2].equals("CLOSE_OK")) {
                         System.out.println("FILE " + fileName + " CLOSED_OK");
                     } else {
@@ -141,6 +148,28 @@ public class Client {
         }
         catch (Exception e){
             
+        }
+    }
+
+    private static String sendReceiveRequest(DatagramSocket socket, String message, InetAddress serverAddress, int serverPort, int timeout){
+        try {
+            byte[] sendData = message.getBytes();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, serverPort);
+            socket.send(sendPacket);
+
+            byte[] receiveBuffer = new byte[2048];
+            DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+            socket.setSoTimeout(timeout);
+            socket.receive(receivePacket);
+            String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            System.out.println("Received response: " + response);
+            return response;
+        } catch (SocketTimeoutException e) {
+            System.out.println("Timeout occured");
+            return null;
+        } catch (IOException e) {
+            System.out.println("Error sending/receiving request: " + e.getMessage());
+            return null;
         }
     }
 }
