@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Server {
-    private static Set<Integer> usedPorts = new HashSet<>();
+    private static final Set<Integer> usedPorts = new HashSet<>();
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -67,7 +67,7 @@ public class Server {
             }
         }
         catch (Exception e){
-            
+            System.out.println("Server error: " + e.getMessage());
         }
     }
 
@@ -84,9 +84,9 @@ public class Server {
     }
 
     static class ClientHandler extends Thread {
-        private String fileName;
+        private final String fileName;
         private InetAddress clientAddress;
-        private int clientHandlerPort;
+        private final int clientHandlerPort;
         private int clientPort;
 
         public ClientHandler(String fileName, int clientHandlerPort) {
@@ -101,13 +101,23 @@ public class Server {
                 byte[] buffer = new byte[1024];
                 
                 while (true) {
-                    DatagramPacket filePacket = new DatagramPacket(buffer, buffer.length);
-                    socket.receive(filePacket);
+                    DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+                    socket.receive(requestPacket);
                     System.out.println("File data received from client: " + fileName);
 
-                    clientAddress = filePacket.getAddress();
-                    clientPort = filePacket.getPort();
+                    clientAddress = requestPacket.getAddress();
+                    clientPort = requestPacket.getPort();
                     System.out.println("Client address: " + clientAddress + ", Client port: " + clientPort);
+                    
+                    String requestData = new String(requestPacket.getData(), 0, requestPacket.getLength());
+                    String[] requestParts = requestData.split(" ");
+
+                    if (requestParts[0].equals("FILE") && requestParts[3].equals("GET") && requestParts[4].equals("START") && requestParts[6].equals("END")) {
+                        long startByte = Long.parseLong(requestParts[5]);
+                        long endByte = Long.parseLong(requestParts[7]);
+
+                        
+                    }
                 }
             } catch (Exception e) {
                 System.out.println("Error sending file data: " + e.getMessage());
