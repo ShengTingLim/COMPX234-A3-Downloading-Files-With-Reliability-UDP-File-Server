@@ -113,7 +113,7 @@ public class Server {
                     String requestData = new String(requestPacket.getData(), 0, requestPacket.getLength());
                     String[] requestParts = requestData.split(" ");
 
-                    if (requestParts.length == 8 && requestParts[0].equals("FILE") && 
+                    if (requestParts.length == 7 && requestParts[0].equals("FILE") && 
                         requestParts[1].equals(fileName) && requestParts[2].equals("GET") && 
                         requestParts[3].equals("START") && requestParts[5].equals("END")) {
 
