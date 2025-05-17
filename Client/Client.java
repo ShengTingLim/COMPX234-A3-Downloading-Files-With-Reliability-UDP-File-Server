@@ -48,6 +48,30 @@ public class Client {
 
                 clientSocket.send(sendPacket);
                 System.out.println("DOWNLOAD " + fileName + " sent to server");
+
+                byte[] receiveBuffer = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+                clientSocket.receive(receivePacket);
+
+                String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Received response: " + response);
+
+                String[] responseParts = response.split(" ");
+                if (responseParts[0].equals("OK")) {
+                    String fileNameResponse = responseParts[1];
+                    long fileSize = Long.parseLong(responseParts[3]);
+                    int clientHandlerPort = Integer.parseInt(responseParts[5]);
+
+                    System.out.println("File name: " + fileNameResponse);
+                    System.out.println("File size: " + fileSize);
+                    System.out.println("Client handler port: " + clientHandlerPort);
+                    
+                    
+                } else if (responseParts[0].equals("ERR")) {
+                    System.out.println("Error: " + responseParts[1] + " " + responseParts[2]);
+                } else {
+                    System.out.println("Invalid response from server");
+                }
             }
         }
         catch (Exception e){
