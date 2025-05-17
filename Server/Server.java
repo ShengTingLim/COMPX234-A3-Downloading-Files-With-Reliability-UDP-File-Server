@@ -41,14 +41,19 @@ public class Server {
 
                 String[] requestParts = receivedData.split(" ", 2);
                 if (requestParts[0].equals("DOWNLOAD")) {
-                    String fileName = requestParts[1];
+                    String fileName = requestParts[1].trim();
                     File file = new File(fileName);
                     String response;
                     
                     if (file.exists() && file.isFile()) {
                         long fileSize = file.length();
-                        
                         int clientHandlerPort = selectRandomPort();
+
+                        response = "OK " + fileName + " SIZE " + fileSize + " PORT " + clientHandlerPort;
+                        byte[] responseData = response.getBytes();
+                        DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length, clientAddress, clientPort);
+                        serverSocket.send(responsePacket);
+                        
 
                     } else {
                         response = "ERR " + fileName + " NOT_FOUND";
