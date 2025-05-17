@@ -85,6 +85,10 @@ public class Server {
         return randomPort;
     }
 
+    private static void releasePort(int port) {
+        usedPorts.remove(port);
+    }
+
     static class ClientHandler extends Thread {
         private final String fileName;
         private final InetAddress clientAddress;
@@ -146,6 +150,8 @@ public class Server {
                 byte[] closeResponseBytes = closeResponse.getBytes();
                 DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBytes, closeResponseBytes.length, clientAddress, clientPort);
                 socket.send(closeResponsePacket);
+
+                releasePort(clientHandlerPort);
             } catch (Exception e) {
                 System.out.println("Error sending file data: " + e.getMessage());
             }
