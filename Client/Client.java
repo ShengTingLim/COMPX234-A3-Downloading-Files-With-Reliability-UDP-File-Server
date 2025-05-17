@@ -120,7 +120,18 @@ public class Client {
                     DatagramPacket closePacket = new DatagramPacket(closeData, closeData.length, serverAddress, clientHandlerPort);
                     clientSocket.send(closePacket);
                     System.out.println("FILE " + fileName + " CLOSE sent to server");
-                    
+
+                    byte[] closeResponseBuffer = new byte[2048];
+                    DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBuffer, closeResponseBuffer.length);
+                    clientSocket.receive(closeResponsePacket);
+                    String closeResponse = new String(closeResponsePacket.getData(), 0, closeResponsePacket.getLength());
+                    System.out.println("Received close response: " + closeResponse);
+                    String[] closeResponseParts = closeResponse.split(" ");
+                    if (closeResponseParts[0].equals("FILE") && closeResponseParts[1].equals(fileName) && closeResponseParts[2].equals("CLOSE_OK")) {
+                        System.out.println("FILE " + fileName + " CLOSED_OK");
+                    } else {
+                        System.out.println("Error: Unexpected response from server");
+                    }
                 } else if (responseParts[0].equals("ERR")) {
                     System.out.println("Error: " + responseParts[1] + " " + responseParts[2]);
                 } else {
