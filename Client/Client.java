@@ -69,51 +69,52 @@ public class Client {
                     System.out.println("Client handler port: " + clientHandlerPort);
                     
                     long bytesReceived = 0;
-                    long endOffset = Math.min(bytesReceived + 999, fileSize - 1);
-
-                    String fileGet = "FILE " + fileName + " GET START " + bytesReceived + " END " + endOffset;
-                    byte[] fileGetData = fileGet.getBytes();
-                    DatagramPacket fileGetPacket = new DatagramPacket(fileGetData, fileGetData.length, serverAddress, clientHandlerPort);
-
-                    clientSocket.send(fileGetPacket);
-                    System.out.println("FILE " + fileName + " GET START " + bytesReceived + " END " + endOffset + " sent to server");
-                    
-                    byte[] fileDataReceiveBuffer = new byte[2048];
-                    DatagramPacket fileDataReceivePacket = new DatagramPacket(fileDataReceiveBuffer, fileDataReceiveBuffer.length);
-
-                    clientSocket.receive(fileDataReceivePacket);
-                    String fileDataResponse = new String(fileDataReceivePacket.getData(), 0, fileDataReceivePacket.getLength());
-                    System.out.println("Received file data: " + fileDataResponse);
-
-                    String[] fileDataResponseParts = fileDataResponse.split(" ", 9);
-                    String base64DataString = null;
-
-                    if (fileDataResponseParts[0].equals("FILE") && fileDataResponseParts[1].equals(fileName) && 
-                        fileDataResponseParts[2].equals("OK") && fileDataResponseParts[3].equals("START") && 
-                        fileDataResponseParts[5].equals("END") && fileDataResponseParts[7].equals("DATA")) {
-
-                        long startByte = Long.parseLong(fileDataResponseParts[4]);
-                        long endByte = Long.parseLong(fileDataResponseParts[6]);
-                        bytesReceived += (endByte - startByte + 1);
-                        base64DataString = fileDataResponseParts[8];
-                    } else {
-                        System.out.println("Invalid response from server");
-                    }
-
-                    if (base64DataString != null) {
-                        byte[] fileData = Base64.getDecoder().decode(base64DataString);
-                        System.out.println("File data received: " + new String(fileData));
-                        try (FileOutputStream fileWriter = new FileOutputStream(fileName, true)) {
-                            fileWriter.write(fileData);
-                            System.out.println("Written " + fileData.length + " bytes to file: " + fileName);
-                            System.out.println("Total bytes received: " + bytesReceived);
-                        } catch (Exception e) {
-                            System.out.println("Error writing file: " + e.getMessage());
+                    try (FileOutputStream fileWriter = new FileOutputStream(fileName, true)) {
+                        while (bytesReceived < fileSize) {
+                            long endBytes = Math.min(bytesReceived + 999, fileSize - 1);
+                            System.out.println("Requesting bytes from " + bytesReceived + " to " + endBytes);
+                            
+                            String fileGet = "FILE " + fileName + " GET START " + bytesReceived + " END " + endBytes;
+                            byte[] fileGetData = fileGet.getBytes();
+                            DatagramPacket fileGetPacket = new DatagramPacket(fileGetData, fileGetData.length, serverAddress, clientHandlerPort);
+                            
+                            clientSocket.send(fileGetPacket);
+                            System.out.println("FILE " + fileName + " GET START " + bytesReceived + " END " + endBytes + " sent to server");
+                            
+                            byte[] fileDataReceiveBuffer = new byte[2048];
+                            DatagramPacket fileDataReceivePacket = new DatagramPacket(fileDataReceiveBuffer, fileDataReceiveBuffer.length);
+                            
+                            clientSocket.receive(fileDataReceivePacket);
+                            String fileDataResponse = new String(fileDataReceivePacket.getData(), 0, fileDataReceivePacket.getLength());
+                            System.out.println("Received file data: " + fileDataResponse);
+                            
+                            String[] fileDataResponseParts = fileDataResponse.split(" ", 9);
+                            String base64DataString = null;
+                            
+                            if (fileDataResponseParts[0].equals("FILE") && fileDataResponseParts[1].equals(fileName) &&
+                                    fileDataResponseParts[2].equals("OK") && fileDataResponseParts[3].equals("START") &&
+                                    fileDataResponseParts[5].equals("END") && fileDataResponseParts[7].equals("DATA")) {
+                                
+                                long startByte = Long.parseLong(fileDataResponseParts[4]);
+                                long endByte = Long.parseLong(fileDataResponseParts[6]);
+                                bytesReceived += (endByte - startByte + 1);
+                                base64DataString = fileDataResponseParts[8];
+                            } else {
+                                System.out.println("Invalid response from server");
+                            }
+                            
+                            if (base64DataString != null) {
+                                byte[] fileData = Base64.getDecoder().decode(base64DataString);
+                                System.out.println("File data received: " + new String(fileData));
+                                fileWriter.write(fileData);
+                                System.out.println("Written " + fileData.length + " bytes to file: " + fileName);
+                                System.out.println("Total bytes received: " + bytesReceived);
+                            } else {
+                                System.out.println("No file data received");
+                            }
                         }
-                    } else {
-                        System.out.println("No file data received");
                     }
-                    
+                    System.out.println("File " + fileName + " downloaded successfully");
                 } else if (responseParts[0].equals("ERR")) {
                     System.out.println("Error: " + responseParts[1] + " " + responseParts[2]);
                 } else {
