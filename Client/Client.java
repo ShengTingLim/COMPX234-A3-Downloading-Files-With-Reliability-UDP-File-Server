@@ -104,7 +104,7 @@ public class Client {
                                 if (fileDataResponse != null) {
                                     break;
                                 } 
-                                System.out.println("Retrying GET Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                                System.out.println("Retrying FILE GET Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
                                 currentTimeout *= 2;
                             }
 
@@ -154,7 +154,24 @@ public class Client {
                     }
                     System.out.println("File " + fileName + " downloaded successfully");
                     String closeMessage = "FILE " + fileName + " CLOSE";
-                    byte[] closeData = closeMessage.getBytes();
+
+                    String closeResponse = null;
+                    currentTimeout = TIMEOUT;
+                    for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                        closeResponse = sendReceiveRequest(clientSocket, closeMessage, serverAddress, clientHandlerPort, currentTimeout);
+                        if (closeResponse != null) {
+                            break;
+                        } 
+                        System.out.println("Retrying FILE CLOSE Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                        currentTimeout *= 2;
+                    }
+                    
+                    if (closeResponse == null) {
+                        System.out.println("Failed to receive response after " + MAX_RETRIES + " attempts");
+                        continue;
+                    }
+
+                   /*  byte[] closeData = closeMessage.getBytes();
                     DatagramPacket closePacket = new DatagramPacket(closeData, closeData.length, serverAddress, clientHandlerPort);
                     clientSocket.send(closePacket);
                     System.out.println("FILE " + fileName + " CLOSE sent to server");
@@ -162,7 +179,7 @@ public class Client {
                     byte[] closeResponseBuffer = new byte[2048];
                     DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBuffer, closeResponseBuffer.length);
                     clientSocket.receive(closeResponsePacket);
-                    String closeResponse = new String(closeResponsePacket.getData(), 0, closeResponsePacket.getLength());
+                    String closeResponse = new String(closeResponsePacket.getData(), 0, closeResponsePacket.getLength()); */
                     System.out.println("Received close response: " + closeResponse);
                     String[] closeResponseParts = closeResponse.split(" ");
                     
