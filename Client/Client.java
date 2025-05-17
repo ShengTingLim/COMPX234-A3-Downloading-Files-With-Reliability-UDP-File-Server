@@ -66,21 +66,6 @@ public class Client {
                     continue;
                 }
 
-                /* byte[] sendData = requestMessage.getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, port);
-
-                clientSocket.send(sendPacket);
-                System.out.println("DOWNLOAD " + fileName + " sent to server");
-
-                byte[] receiveBuffer = new byte[2024];
-                DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
-                clientSocket.setSoTimeout(INITIAL_TIMEOUT);
-                clientSocket.receive(receivePacket);
-
-                String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                System.out.println("Received response: " + response);
-                */
-
                 String[] responseParts = response.split(" ");
                 if (responseParts[0].equals("OK") && responseParts.length == 6) {
                     long fileSize = Long.parseLong(responseParts[3]);
@@ -112,19 +97,6 @@ public class Client {
                                 System.out.println("Failed to receive response after " + MAX_RETRIES + " attempts");
                                 continue;
                             }
-
-                           /*  byte[] fileGetData = fileGet.getBytes();
-                            DatagramPacket fileGetPacket = new DatagramPacket(fileGetData, fileGetData.length, serverAddress, clientHandlerPort);
-                            
-                            clientSocket.send(fileGetPacket);
-                            System.out.println("FILE " + fileName + " GET START " + bytesReceived + " END " + endBytes + " sent to server");
-                            
-                            byte[] fileDataReceiveBuffer = new byte[2048];
-                            DatagramPacket fileDataReceivePacket = new DatagramPacket(fileDataReceiveBuffer, fileDataReceiveBuffer.length);
-                            
-                            clientSocket.receive(fileDataReceivePacket);
-                            String fileDataResponse = new String(fileDataReceivePacket.getData(), 0, fileDataReceivePacket.getLength());
-                            System.out.println("Received file data: " + fileDataResponse); */
                             
                             String[] fileDataResponseParts = fileDataResponse.split(" ", 9);
                             String base64DataString = null;
@@ -165,21 +137,12 @@ public class Client {
                         System.out.println("Retrying FILE CLOSE Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
                         currentTimeout *= 2;
                     }
-                    
+
                     if (closeResponse == null) {
                         System.out.println("Failed to receive response after " + MAX_RETRIES + " attempts");
                         continue;
                     }
 
-                   /*  byte[] closeData = closeMessage.getBytes();
-                    DatagramPacket closePacket = new DatagramPacket(closeData, closeData.length, serverAddress, clientHandlerPort);
-                    clientSocket.send(closePacket);
-                    System.out.println("FILE " + fileName + " CLOSE sent to server");
-
-                    byte[] closeResponseBuffer = new byte[2048];
-                    DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBuffer, closeResponseBuffer.length);
-                    clientSocket.receive(closeResponsePacket);
-                    String closeResponse = new String(closeResponsePacket.getData(), 0, closeResponsePacket.getLength()); */
                     System.out.println("Received close response: " + closeResponse);
                     String[] closeResponseParts = closeResponse.split(" ");
                     
