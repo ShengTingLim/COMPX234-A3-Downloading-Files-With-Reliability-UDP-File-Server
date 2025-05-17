@@ -24,13 +24,13 @@ public class Client {
             return;
         }
 
-        List<String> fileNames = new ArrayList<>();
+        List<String> filesToDownload = new ArrayList<>();
         try (BufferedReader fileReader = new BufferedReader(new FileReader(fileList))) {
             String line;
             while ((line = fileReader.readLine()) != null) {
                 line = line.trim();
                 if (!line.isEmpty()) {
-                    fileNames.add(line);
+                    filesToDownload.add(line);
                 }
             }   
         } catch (Exception e) {
@@ -38,18 +38,19 @@ public class Client {
         }
 
         try(DatagramSocket clientSocket = new DatagramSocket()){
-            for (String fileName : fileNames) {
+            InetAddress serverAddress = InetAddress.getByName(hostname);
+
+            for (String fileName : filesToDownload) {
                 System.out.println("Sending file name: " + fileName);
                 String requestMessage = "DOWNLOAD " + fileName;
 
                 byte[] sendData = requestMessage.getBytes();
-                InetAddress serverAddress = InetAddress.getByName(hostname);
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, port);
 
                 clientSocket.send(sendPacket);
                 System.out.println("DOWNLOAD " + fileName + " sent to server");
 
-                byte[] receiveBuffer = new byte[1024];
+                byte[] receiveBuffer = new byte[2024];
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
                 clientSocket.receive(receivePacket);
 
@@ -58,22 +59,28 @@ public class Client {
 
                 String[] responseParts = response.split(" ");
                 if (responseParts[0].equals("OK") && responseParts.length == 6) {
-                    String fileNameResponse = responseParts[1];
                     long fileSize = Long.parseLong(responseParts[3]);
                     int clientHandlerPort = Integer.parseInt(responseParts[5]);
 
-                    System.out.println("File name: " + fileNameResponse);
+                    System.out.println("File name: " + fileName);
                     System.out.println("File size: " + fileSize);
                     System.out.println("Client handler port: " + clientHandlerPort);
                     
                     long bytesReceived = 0;
                     long endOffset = Math.min(bytesReceived + 999, fileSize - 1);
-                    String fileGet = "FILE " + fileNameResponse + " GET START " + bytesReceived + " END " + endOffset;
+
+                    String fileGet = "FILE " + fileName + " GET START " + bytesReceived + " END " + endOffset;
                     byte[] fileGetData = fileGet.getBytes();
                     DatagramPacket fileGetPacket = new DatagramPacket(fileGetData, fileGetData.length, serverAddress, clientHandlerPort);
+
                     clientSocket.send(fileGetPacket);
-                    System.out.println("FILE " + fileNameResponse + " GET START " + bytesReceived + " END " + endOffset + " sent to server");
+                    System.out.println("FILE " + fileName + " GET START " + bytesReceived + " END " + endOffset + " sent to server");
                     
+                    byte[] fileDataReceiveBuffer = new byte[2048];
+                    DatagramPacket fileDataReceivePacket = new DatagramPacket(fileDataReceiveBuffer, fileDataReceiveBuffer.length);
+
+                    clientSocket.receive(fileDataReceivePacket);
+                    String fileDataResponse = new String(fileDataReceivePacket.getData(), 0, fileDataReceivePacket.getLength());
                     
                 } else if (responseParts[0].equals("ERR")) {
                     System.out.println("Error: " + responseParts[1] + " " + responseParts[2]);
