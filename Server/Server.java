@@ -56,7 +56,7 @@ public class Server {
                         DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length, clientAddress, clientPort);
                         serverSocket.send(responsePacket);
 
-                        ClientHandler clientHandler = new ClientHandler(fileName, clientHandlerPort);
+                        ClientHandler clientHandler = new ClientHandler(fileName, clientHandlerPort, clientAddress, clientPort);
                         clientHandler.start();
 
                     } else {
@@ -87,13 +87,15 @@ public class Server {
 
     static class ClientHandler extends Thread {
         private final String fileName;
-        private InetAddress clientAddress;
+        private final InetAddress clientAddress;
         private final int clientHandlerPort;
-        private int clientPort;
+        private final int clientPort;
 
-        public ClientHandler(String fileName, int clientHandlerPort) {
+        public ClientHandler(String fileName, int clientHandlerPort, InetAddress clientAddress, int clientPort) {
             this.fileName = fileName;
             this.clientHandlerPort = clientHandlerPort;
+            this.clientAddress = clientAddress;
+            this.clientPort = clientPort;
         }
 
         @Override
@@ -106,15 +108,15 @@ public class Server {
                     DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
                     socket.receive(requestPacket);
                     System.out.println("File data received from client: " + fileName);
-
-                    clientAddress = requestPacket.getAddress();
-                    clientPort = requestPacket.getPort();
                     System.out.println("Client address: " + clientAddress + ", Client port: " + clientPort);
                     
                     String requestData = new String(requestPacket.getData(), 0, requestPacket.getLength());
                     String[] requestParts = requestData.split(" ");
 
-                    if (requestParts[0].equals("FILE") && requestParts[3].equals("GET") && requestParts[4].equals("START") && requestParts[6].equals("END")) {
+                    if (requestParts.length == 8 && requestParts[0].equals("FILE") && 
+                        requestParts[1].equals(fileName) && requestParts[2].equals("GET") && 
+                        requestParts[3].equals("START") && requestParts[5].equals("END")) {
+
                         long startByte = Long.parseLong(requestParts[5]);
                         long endByte = Long.parseLong(requestParts[7]);
 
