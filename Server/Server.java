@@ -117,8 +117,8 @@ public class Server {
                         requestParts[1].equals(fileName) && requestParts[2].equals("GET") && 
                         requestParts[3].equals("START") && requestParts[5].equals("END")) {
 
-                        long startByte = Long.parseLong(requestParts[5]);
-                        long endByte = Long.parseLong(requestParts[7]);
+                        long startByte = Long.parseLong(requestParts[4]);
+                        long endByte = Long.parseLong(requestParts[6]);
 
                         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
                             file.seek(startByte);
