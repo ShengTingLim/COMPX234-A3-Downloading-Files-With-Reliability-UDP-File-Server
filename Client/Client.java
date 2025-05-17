@@ -11,7 +11,7 @@ import java.util.Base64;
 import java.util.List;
 
 public class Client {
-    private static final int INITIAL_TIMEOUT = 1000;
+    private static final int TIMEOUT = 1000;
     private static final int MAX_RETRIES = 5;
 
     public static void main(String[] args) {
@@ -50,8 +50,23 @@ public class Client {
             for (String fileName : filesToDownload) {
                 System.out.println("Sending file name: " + fileName);
                 String requestMessage = "DOWNLOAD " + fileName;
+                String response = null;
+                int currentTimeout = TIMEOUT;
+                for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                    response = sendReceiveRequest(clientSocket, requestMessage, serverAddress, port, currentTimeout);
+                    if (response != null) {
+                        break;
+                    } 
+                    System.out.println("Retrying DOWNLOAD Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                    currentTimeout *= 2;
+                }
 
-                byte[] sendData = requestMessage.getBytes();
+                if (response == null) {
+                    System.out.println("Failed to receive response after " + MAX_RETRIES + " attempts");
+                    continue;
+                }
+
+                /* byte[] sendData = requestMessage.getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, port);
 
                 clientSocket.send(sendPacket);
@@ -64,6 +79,7 @@ public class Client {
 
                 String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
                 System.out.println("Received response: " + response);
+                */
 
                 String[] responseParts = response.split(" ");
                 if (responseParts[0].equals("OK") && responseParts.length == 6) {
