@@ -21,11 +21,11 @@ public class Client {
         }
 
         String hostname = args[0];
-        int port;
+        int serverPort;
         String fileList = args[2];
 
         try {
-            port = Integer.parseInt(args[1]);
+            serverPort = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
             System.out.println("Invalid port number. Please provide a valid integer.");
             return;
@@ -53,7 +53,7 @@ public class Client {
                 String response = null;
                 int currentTimeout = TIMEOUT;
                 for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
-                    response = sendReceiveRequest(clientSocket, requestMessage, serverAddress, port, currentTimeout);
+                    response = sendReceiveRequest(clientSocket, requestMessage, serverAddress, serverPort, currentTimeout);
                     if (response != null) {
                         break;
                     } 
@@ -96,8 +96,24 @@ public class Client {
                             long endBytes = Math.min(bytesReceived + 999, fileSize - 1);
                             System.out.println("Requesting bytes from " + bytesReceived + " to " + endBytes);
                             
-                            String fileGet = "FILE " + fileName + " GET START " + bytesReceived + " END " + endBytes;
-                            byte[] fileGetData = fileGet.getBytes();
+                            String fileGetMessage = "FILE " + fileName + " GET START " + bytesReceived + " END " + endBytes;
+                            String fileDataResponse = null;
+                            currentTimeout = TIMEOUT;
+                            for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                                fileDataResponse = sendReceiveRequest(clientSocket, fileGetMessage, serverAddress, clientHandlerPort, currentTimeout);
+                                if (fileDataResponse != null) {
+                                    break;
+                                } 
+                                System.out.println("Retrying GET Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                                currentTimeout *= 2;
+                            }
+
+                            if (fileDataResponse == null) {
+                                System.out.println("Failed to receive response after " + MAX_RETRIES + " attempts");
+                                continue;
+                            }
+
+                           /*  byte[] fileGetData = fileGet.getBytes();
                             DatagramPacket fileGetPacket = new DatagramPacket(fileGetData, fileGetData.length, serverAddress, clientHandlerPort);
                             
                             clientSocket.send(fileGetPacket);
@@ -108,7 +124,7 @@ public class Client {
                             
                             clientSocket.receive(fileDataReceivePacket);
                             String fileDataResponse = new String(fileDataReceivePacket.getData(), 0, fileDataReceivePacket.getLength());
-                            System.out.println("Received file data: " + fileDataResponse);
+                            System.out.println("Received file data: " + fileDataResponse); */
                             
                             String[] fileDataResponseParts = fileDataResponse.split(" ", 9);
                             String base64DataString = null;
