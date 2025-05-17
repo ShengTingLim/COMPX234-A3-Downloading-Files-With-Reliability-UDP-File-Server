@@ -2,8 +2,12 @@ import java.io.File;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Server {
+    private static Set<Integer> usedPorts = new HashSet<>();
+
     public static void main(String[] args) {
         if (args.length != 1) {
             System.out.println("Usage: java Server <port>");
@@ -44,6 +48,8 @@ public class Server {
                     if (file.exists() && file.isFile()) {
                         long fileSize = file.length();
                         
+                        int clientHandlerPort = selectRandomPort();
+
                     } else {
                         response = "ERR " + fileName + " NOT_FOUND";
                         byte[] responseData = response.getBytes();
@@ -56,6 +62,18 @@ public class Server {
         catch (Exception e){
             
         }
+    }
+
+    private static int selectRandomPort() {
+        int minPort = 50000;
+        int maxPort = 51000;
+        int randomPort = (int) (Math.random() * (maxPort - minPort + 1)) + minPort;
+        while (usedPorts.contains(randomPort)) {
+            randomPort = (int) (Math.random() * (maxPort - minPort + 1)) + minPort;
+        }
+        usedPorts.add(randomPort);
+        System.out.println("Random port: " + randomPort);
+        return randomPort;
     }
 
     static class ClientHandler extends Thread {
