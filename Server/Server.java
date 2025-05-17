@@ -20,6 +20,7 @@ public class Server {
 
         try {
             port = Integer.parseInt(args[0]);
+            usedPorts.add(port);
         } catch (NumberFormatException e) {
             System.out.println("Invalid port number. Please provide a valid integer.");
             return;

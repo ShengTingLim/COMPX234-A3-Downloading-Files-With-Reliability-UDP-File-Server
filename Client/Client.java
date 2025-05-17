@@ -115,7 +115,7 @@ public class Client {
                             
                             if (base64DataString != null) {
                                 byte[] fileData = Base64.getDecoder().decode(base64DataString);
-                                System.out.println("File data received: " + new String(fileData));
+                                System.out.println("File data received: " + fileData.length + " bytes");
                                 fileWriter.write(fileData);
                                 System.out.println("Written " + fileData.length + " bytes to file: " + fileName);
                                 System.out.println("Total bytes received: " + bytesReceived);
@@ -174,7 +174,6 @@ public class Client {
             socket.setSoTimeout(timeout);
             socket.receive(receivePacket);
             String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
-            System.out.println("Received response: " + response);
             return response;
         } catch (SocketTimeoutException e) {
             System.out.println("Timeout occured for request: " + message);
