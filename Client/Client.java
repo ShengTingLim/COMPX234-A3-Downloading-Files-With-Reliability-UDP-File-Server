@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class Client {
@@ -81,6 +82,29 @@ public class Client {
 
                     clientSocket.receive(fileDataReceivePacket);
                     String fileDataResponse = new String(fileDataReceivePacket.getData(), 0, fileDataReceivePacket.getLength());
+                    System.out.println("Received file data: " + fileDataResponse);
+
+                    String[] fileDataResponseParts = fileDataResponse.split(" ", 9);
+                    String base64DataString = null;
+
+                    if (fileDataResponseParts[0].equals("FILE") && fileDataResponseParts[1].equals(fileName) && 
+                        fileDataResponseParts[2].equals("OK") && fileDataResponseParts[3].equals("START") && 
+                        fileDataResponseParts[5].equals("END") && fileDataResponseParts[7].equals("DATA")) {
+
+                        long startByte = Long.parseLong(fileDataResponseParts[4]);
+                        long endByte = Long.parseLong(fileDataResponseParts[6]);
+                        bytesReceived += (endByte - startByte + 1);
+                        base64DataString = fileDataResponseParts[8];
+                    } else {
+                        System.out.println("Invalid response from server");
+                    }
+
+                    if (base64DataString != null) {
+                        byte[] fileData = Base64.getDecoder().decode(base64DataString);
+                        System.out.println("File data received: " + new String(fileData));
+                    } else {
+                        System.out.println("No file data received");
+                    }
                     
                 } else if (responseParts[0].equals("ERR")) {
                     System.out.println("Error: " + responseParts[1] + " " + responseParts[2]);
