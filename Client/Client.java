@@ -115,6 +115,12 @@ public class Client {
                         }
                     }
                     System.out.println("File " + fileName + " downloaded successfully");
+                    String closeMessage = "FILE " + fileName + " CLOSE";
+                    byte[] closeData = closeMessage.getBytes();
+                    DatagramPacket closePacket = new DatagramPacket(closeData, closeData.length, serverAddress, clientHandlerPort);
+                    clientSocket.send(closePacket);
+                    System.out.println("FILE " + fileName + " CLOSE sent to server");
+                    
                 } else if (responseParts[0].equals("ERR")) {
                     System.out.println("Error: " + responseParts[1] + " " + responseParts[2]);
                 } else {
