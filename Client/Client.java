@@ -57,7 +57,7 @@ public class Client {
                 System.out.println("Received response: " + response);
 
                 String[] responseParts = response.split(" ");
-                if (responseParts[0].equals("OK")) {
+                if (responseParts[0].equals("OK") && responseParts.length == 6) {
                     String fileNameResponse = responseParts[1];
                     long fileSize = Long.parseLong(responseParts[3]);
                     int clientHandlerPort = Integer.parseInt(responseParts[5]);
@@ -65,6 +65,14 @@ public class Client {
                     System.out.println("File name: " + fileNameResponse);
                     System.out.println("File size: " + fileSize);
                     System.out.println("Client handler port: " + clientHandlerPort);
+                    
+                    long bytesReceived = 0;
+                    long endOffset = Math.min(bytesReceived + 999, fileSize - 1);
+                    String fileGet = "FILE " + fileNameResponse + " GET START " + bytesReceived + " END " + endOffset;
+                    byte[] fileGetData = fileGet.getBytes();
+                    DatagramPacket fileGetPacket = new DatagramPacket(fileGetData, fileGetData.length, serverAddress, clientHandlerPort);
+                    clientSocket.send(fileGetPacket);
+                    System.out.println("FILE " + fileNameResponse + " GET START " + bytesReceived + " END " + endOffset + " sent to server");
                     
                     
                 } else if (responseParts[0].equals("ERR")) {
