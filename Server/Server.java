@@ -53,7 +53,9 @@ public class Server {
                         byte[] responseData = response.getBytes();
                         DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length, clientAddress, clientPort);
                         serverSocket.send(responsePacket);
-                        
+
+                        ClientHandler clientHandler = new ClientHandler(fileName, clientHandlerPort);
+                        clientHandler.start();
 
                     } else {
                         response = "ERR " + fileName + " NOT_FOUND";
@@ -85,12 +87,11 @@ public class Server {
         private String fileName;
         private InetAddress clientAddress;
         private int clientHandlerPort;
+        private int clientPort;
 
-        public ClientHandler(String fileName, InetAddress clientAddress, int clientHandlerPort) {
+        public ClientHandler(String fileName, int clientHandlerPort) {
             this.fileName = fileName;
-            this.clientAddress = clientAddress;
             this.clientHandlerPort = clientHandlerPort;
-            System.out.println("ClientHandler created for file: " + fileName + " on port: " + clientHandlerPort);
         }
 
         @Override
@@ -103,6 +104,10 @@ public class Server {
                     DatagramPacket filePacket = new DatagramPacket(buffer, buffer.length);
                     socket.receive(filePacket);
                     System.out.println("File data received from client: " + fileName);
+
+                    clientAddress = filePacket.getAddress();
+                    clientPort = filePacket.getPort();
+                    System.out.println("Client address: " + clientAddress + ", Client port: " + clientPort);
                 }
             } catch (Exception e) {
                 System.out.println("Error sending file data: " + e.getMessage());
