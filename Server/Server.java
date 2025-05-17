@@ -136,7 +136,16 @@ public class Server {
                             System.out.println("Error reading file: " + e.getMessage());
                         }
                     }
+                    else if (requestParts.length == 3 && requestParts[0].equals("FILE") && 
+                        requestParts[1].equals(fileName) && requestParts[2].equals("CLOSE")){
+                        break;
+                    }
                 }
+                
+                String closeResponse = "FILE " + fileName + " CLOSE_OK";
+                byte[] closeResponseBytes = closeResponse.getBytes();
+                DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBytes, closeResponseBytes.length, clientAddress, clientPort);
+                socket.send(closeResponsePacket);
             } catch (Exception e) {
                 System.out.println("Error sending file data: " + e.getMessage());
             }
