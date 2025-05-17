@@ -76,7 +76,7 @@ public class Client {
                     System.out.println("Client handler port: " + clientHandlerPort);
                     
                     long bytesReceived = 0;
-                    try (FileOutputStream fileWriter = new FileOutputStream(fileName, true)) {
+                    try (FileOutputStream fileWriter = new FileOutputStream(fileName)) {
                         while (bytesReceived < fileSize) {
                             long endBytes = Math.min(bytesReceived + 999, fileSize - 1);
                             System.out.println("Requesting bytes from " + bytesReceived + " to " + endBytes);
@@ -95,7 +95,7 @@ public class Client {
 
                             if (fileDataResponse == null) {
                                 System.out.println("Failed to receive response after " + MAX_RETRIES + " attempts");
-                                continue;
+                                break;
                             }
                             
                             String[] fileDataResponseParts = fileDataResponse.split(" ", 9);
@@ -159,7 +159,7 @@ public class Client {
             }
         }
         catch (Exception e){
-            
+            System.out.println("Error in client: " + e.getMessage());
         }
     }
 
@@ -177,7 +177,7 @@ public class Client {
             System.out.println("Received response: " + response);
             return response;
         } catch (SocketTimeoutException e) {
-            System.out.println("Timeout occured");
+            System.out.println("Timeout occured for request: " + message);
             return null;
         } catch (IOException e) {
             System.out.println("Error sending/receiving request: " + e.getMessage());
