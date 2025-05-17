@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -116,7 +117,11 @@ public class Server {
                         long startByte = Long.parseLong(requestParts[5]);
                         long endByte = Long.parseLong(requestParts[7]);
 
-                        
+                        try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
+                            
+                        } catch (Exception e) {
+                            System.out.println("Error reading file: " + e.getMessage());
+                        }
                     }
                 }
             } catch (Exception e) {
