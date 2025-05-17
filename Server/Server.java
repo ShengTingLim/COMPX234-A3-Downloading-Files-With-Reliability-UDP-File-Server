@@ -125,6 +125,11 @@ public class Server {
                             int bytesRead = file.read(fileChunk);
                             System.out.println("Read " + bytesRead + " bytes from file: " + fileName);
                             String base64String = Base64.getEncoder().encodeToString(fileChunk);
+
+                            String responseData = "FILE " + fileName + " OK START " + startByte + " END " + endByte + " DATA " + base64String;
+                            byte[] responseBytes = responseData.getBytes();
+                            DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length, clientAddress, clientPort);
+                            socket.send(responsePacket);
                         } catch (Exception e) {
                             System.out.println("Error reading file: " + e.getMessage());
                         }
