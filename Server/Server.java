@@ -150,10 +150,11 @@ public class Server {
                 byte[] closeResponseBytes = closeResponse.getBytes();
                 DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBytes, closeResponseBytes.length, clientAddress, clientPort);
                 socket.send(closeResponsePacket);
-
-                releasePort(clientHandlerPort);
             } catch (Exception e) {
                 System.out.println("Error sending file data: " + e.getMessage());
+            } finally {
+                System.out.println("ClientHandler for file: " + fileName + " on port: " + clientHandlerPort + " finished");
+                releasePort(clientHandlerPort);
             }
         }
     }
