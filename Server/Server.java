@@ -3,6 +3,7 @@ import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +28,7 @@ public class Server {
         try (DatagramSocket serverSocket = new DatagramSocket(port)) {
             System.out.println("Server is listening on port " + port);
             
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048];
 
             while (true) {
                 DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
@@ -99,7 +100,7 @@ public class Server {
         public void run() {
             try (DatagramSocket socket = new DatagramSocket(clientHandlerPort)) {
                 System.out.println("ClientHandler started for file: " + fileName + " on port: " + clientHandlerPort);
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[2048];
                 
                 while (true) {
                     DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
@@ -118,7 +119,12 @@ public class Server {
                         long endByte = Long.parseLong(requestParts[7]);
 
                         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
-                            
+                            file.seek(startByte);
+                            int bytesToRead = (int)(endByte - startByte + 1);
+                            byte[] fileChunk = new byte[bytesToRead];
+                            int bytesRead = file.read(fileChunk);
+                            System.out.println("Read " + bytesRead + " bytes from file: " + fileName);
+                            String base64String = Base64.getEncoder().encodeToString(fileChunk);
                         } catch (Exception e) {
                             System.out.println("Error reading file: " + e.getMessage());
                         }
