@@ -116,47 +116,52 @@ public class Server {
         @Override
         public void run() {
             try (DatagramSocket socket = new DatagramSocket(clientHandlerPort)) {
-                System.out.println("ClientHandler started for file: " + fileName + " on port: " + clientHandlerPort);
+                System.out.println("ClientHandler started for file: " + fileName + " on port: " + clientHandlerPort + "\nFor Client: " + clientAddress + ":" + clientPort);
                 byte[] buffer = new byte[2048];
                 
                 while (true) {
                     DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
                     socket.receive(requestPacket);
-                    System.out.println("File data received from client: " + fileName);
-                    System.out.println("Client address: " + clientAddress + ", Client port: " + clientPort);
                     
                     String requestData = new String(requestPacket.getData(), 0, requestPacket.getLength());
                     String[] requestParts = requestData.split(" ");
+                    System.out.println("ClientHandler (" + this.fileName + ") received from " + this.clientAddress.getHostAddress() + ":" + this.clientPort + " -> \"" + requestData + "\"");
 
                     if (requestParts.length == 7 && requestParts[0].equals("FILE") && 
                         requestParts[1].equals(fileName) && requestParts[2].equals("GET") && 
                         requestParts[3].equals("START") && requestParts[5].equals("END")) {
+                        
+                        long startByte;
+                        long endByte;
 
-                        long startByte = Long.parseLong(requestParts[4]);
-                        long endByte = Long.parseLong(requestParts[6]);
+                        try {
+                            startByte = Long.parseLong(requestParts[4]);
+                            endByte = Long.parseLong(requestParts[6]);
 
-                        try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
-                            file.seek(startByte);
-                            int bytesToRead = (int)(endByte - startByte + 1);
-                            byte[] fileChunk = new byte[bytesToRead];
-                            int bytesRead = file.read(fileChunk);
-                            System.out.println("Read " + bytesRead + " bytes from file: " + fileName);
-                            String base64String = Base64.getEncoder().encodeToString(fileChunk);
+                            try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
+                                file.seek(startByte);
+                                int bytesToRead = (int)(endByte - startByte + 1);
+                                byte[] fileChunk = new byte[bytesToRead];
+                                int bytesRead = file.read(fileChunk);
+                                System.out.println("Read " + bytesRead + " bytes from file: " + fileName);
+                                String base64String = Base64.getEncoder().encodeToString(fileChunk);
 
-                            String responseData = "FILE " + fileName + " OK START " + startByte + " END " + endByte + " DATA " + base64String;
-                            byte[] responseBytes = responseData.getBytes();
-                            DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length, clientAddress, clientPort);
-                            socket.send(responsePacket);
-                        } catch (Exception e) {
-                            System.out.println("Error reading file: " + e.getMessage());
-                        }
+                                String responseData = "FILE " + fileName + " OK START " + startByte + " END " + endByte + " DATA " + base64String;
+                                byte[] responseBytes = responseData.getBytes();
+                                DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length, clientAddress, clientPort);
+                                socket.send(responsePacket);
+                            } catch (Exception e) {
+                                System.out.println("Error reading file: " + e.getMessage());
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Error parsing start and end bytes: " + e.getMessage());
+                        }                        
                     }
                     else if (requestParts.length == 3 && requestParts[0].equals("FILE") && 
                         requestParts[1].equals(fileName) && requestParts[2].equals("CLOSE")){
                         break;
                     }
                 }
-                
                 String closeResponse = "FILE " + fileName + " CLOSE_OK";
                 byte[] closeResponseBytes = closeResponse.getBytes();
                 DatagramPacket closeResponsePacket = new DatagramPacket(closeResponseBytes, closeResponseBytes.length, clientAddress, clientPort);
