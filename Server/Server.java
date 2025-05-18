@@ -9,6 +9,8 @@ import java.util.Set;
 
 public class Server {
     private static final Set<Integer> usedPorts = new HashSet<>();
+    private static final int CLIENT_MIN_PORT = 50000;
+    private static final int CLIENT_MAX_PORT = 51000;
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -75,11 +77,9 @@ public class Server {
     }
 
     private static int selectRandomPort() {
-        int minPort = 50000;
-        int maxPort = 51000;
-        int randomPort = (int) (Math.random() * (maxPort - minPort + 1)) + minPort;
+        int randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
         while (usedPorts.contains(randomPort)) {
-            randomPort = (int) (Math.random() * (maxPort - minPort + 1)) + minPort;
+            randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
         }
         usedPorts.add(randomPort);
         System.out.println("Random port: " + randomPort);
