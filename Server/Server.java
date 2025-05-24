@@ -137,7 +137,6 @@ public class Server {
         return port;
     }
 
-
     /**
      * Releases a port that was previously used by selectRandomPort
      * @param port The port number to release
@@ -164,7 +163,6 @@ public class Server {
             this.clientAddress = clientAddress;
             this.clientPort = clientPort;
         }
-
         
         /**
          * Handles a single file download request from a client
