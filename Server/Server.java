@@ -8,6 +8,9 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Server class for handling file download requests from clients
+ */
 public class Server {
     private static final Set<Integer> usedPorts = new HashSet<>();
     private static final int CLIENT_MIN_PORT = 50000;
