@@ -75,6 +75,15 @@ public class Server {
                         long fileSize = file.length();
                         int clientHandlerPort = selectRandomPort();
 
+                        // If no ports are available, send an error response
+                        if (clientHandlerPort == -1) {
+                            response = "ERR " + fileName + " NO_PORTS_AVAILABLE";
+                            byte[] responseData = response.getBytes();
+                            DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length, clientAddress, clientPort);
+                            serverSocket.send(responsePacket);
+                            continue;
+                        }
+
                         // Send a response back to the client
                         response = "OK " + fileName + " SIZE " + fileSize + " PORT " + clientHandlerPort;
                         byte[] responseData = response.getBytes();
