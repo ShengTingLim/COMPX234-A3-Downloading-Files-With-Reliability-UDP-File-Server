@@ -81,23 +81,23 @@ public class Server {
     }
 
     private static int selectRandomPort() {
-        synchronized (usedPorts) {
-            if (usedPorts.size() >= (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) {
-                System.out.println("No available ports left");
-                return -1;
-            }
-            int randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
-            while (usedPorts.contains(randomPort)) {
-                randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
-            }
-            usedPorts.add(randomPort);
-            System.out.println("Random port: " + randomPort);
-            return randomPort;
+        if (usedPorts.size() >= (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) {
+            System.out.println("No available ports left");
+            return -1;
         }
+        int randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
+        while (usedPorts.contains(randomPort)) {
+            randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
+        }
+        usedPorts.add(randomPort);
+        System.out.println("Random port: " + randomPort);
+        return randomPort;
     }
 
     private static void releasePort(int port) {
-        usedPorts.remove(port);
+        synchronized (usedPorts) {
+            usedPorts.remove(port);
+        }
     }
 
     static class ClientHandler extends Thread {
