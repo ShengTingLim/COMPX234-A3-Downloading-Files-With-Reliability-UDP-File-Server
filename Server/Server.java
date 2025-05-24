@@ -20,7 +20,7 @@ public class Server {
      * Starts the server on the specified port and listens for incoming requests.
      * Creates a new thread to handle client requests for file downloads.
      *
-     * @param args Should contain a single argument which is the port number
+     * @param args Command line arguments: port
      */
     public static void main(String[] args) {
         // Check if the correct number of arguments is provided
