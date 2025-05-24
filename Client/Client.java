@@ -16,7 +16,7 @@ import java.util.List;
  * and handles the responses to retrieve the files.
  */
 public class Client {
-    private static final int TIMEOUT = 500;
+    private static final int TIMEOUT = 200;
     private static final int MAX_RETRIES = 5;
 
     /**
