@@ -4,8 +4,10 @@ import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -13,6 +15,8 @@ import java.util.Set;
  */
 public class Server {
     private static final Set<Integer> usedPorts = new HashSet<>();
+    private static final ArrayList<Integer> availablePorts = new ArrayList<>();
+    private static final Random rand = new Random();
     private static final int CLIENT_MIN_PORT = 50000;
     private static final int CLIENT_MAX_PORT = 51000;
 
@@ -35,6 +39,12 @@ public class Server {
         try {
             port = Integer.parseInt(args[0]);
             usedPorts.add(port);
+            // Set up the available ports
+            for (int i = CLIENT_MIN_PORT; i <= CLIENT_MAX_PORT; i++) {
+                if (!usedPorts.contains(i)) {
+                    availablePorts.add(i);
+                }
+            }
         } catch (NumberFormatException e) {
             System.out.println("Invalid port number. Please provide a valid integer.");
             return;
@@ -118,17 +128,13 @@ public class Server {
      * @return A random unused port number or -1 if all ports have been used
      */
     private static int selectRandomPort() {
-        if (usedPorts.size() >= (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) {
+        if (availablePorts.isEmpty()) {
             System.out.println("No available ports left");
             return -1;
         }
-        int randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
-        while (usedPorts.contains(randomPort)) {
-            randomPort = (int) (Math.random() * (CLIENT_MAX_PORT - CLIENT_MIN_PORT + 1)) + CLIENT_MIN_PORT;
-        }
-        usedPorts.add(randomPort);
-        System.out.println("Random port: " + randomPort);
-        return randomPort;
+        int port = availablePorts.remove(rand.nextInt(availablePorts.size()));
+        usedPorts.add(port);
+        return port;
     }
 
 
@@ -136,9 +142,9 @@ public class Server {
      * Releases a port that was previously used by selectRandomPort
      * @param port The port number to release
      */
-    private static void releasePort(int port) {
-        synchronized (usedPorts) {
-            usedPorts.remove(port);
+    private static synchronized void releasePort(int port) {
+        if (usedPorts.remove(port)) {
+            availablePorts.add(port);
         }
     }
 
