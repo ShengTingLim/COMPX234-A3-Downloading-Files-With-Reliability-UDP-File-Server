@@ -76,7 +76,7 @@ public class Client {
                     if (response != null) {
                         break;
                     } 
-                    System.out.println("Retrying DOWNLOAD Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                    System.out.println("Retrying DOWNLOAD Attempt for " + fileName + " Timeout:" + currentTimeout + "ms Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
                     currentTimeout *= 2;
                 }
 
@@ -117,7 +117,7 @@ public class Client {
                                 if (fileDataResponse != null) {
                                     break;
                                 } 
-                                System.out.println("Retrying FILE GET Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                                System.out.println("Retrying FILE GET Attempt for " + fileName + " Timeout:" + currentTimeout + "ms Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
                                 currentTimeout *= 2;
                             }
 
@@ -169,7 +169,7 @@ public class Client {
                         if (closeResponse != null) {
                             break;
                         } 
-                        System.out.println("Retrying FILE CLOSE Attempt for " + fileName + " Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
+                        System.out.println("Retrying FILE CLOSE Attempt for " + fileName + " Timeout:" + currentTimeout + "ms Attempt " + (attempt + 1) + "/" + MAX_RETRIES);
                         currentTimeout *= 2;
                     }
 
