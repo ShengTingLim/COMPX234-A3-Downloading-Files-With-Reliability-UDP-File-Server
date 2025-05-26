@@ -38,6 +38,11 @@ public class Server {
         // Parse the port number
         try {
             port = Integer.parseInt(args[0]);
+            // Limit the port number to a high port, 50000 - 51000
+            if (port < 50000 || port > 51000) {
+                System.out.println("Error: Port number must be between 50000 and 51000.");
+                System.exit(1);
+            }
             usedPorts.add(port);
             // Set up the available ports
             for (int i = CLIENT_MIN_PORT; i <= CLIENT_MAX_PORT; i++) {
